@@ -142,6 +142,7 @@ def pair_val(models, keys, val_input, val_label,args):
                 solvers[solver1] += 1
             if predict_y[i] == -1:
                 solvers[solver2] += 1
+        # 如何处理相同胜出数的求解器
         ans.append(max(solvers, key=solvers.get))
         print(solvers)
         print(ans)
