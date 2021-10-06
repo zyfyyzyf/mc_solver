@@ -123,17 +123,32 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
         return weight, X, y
 
 
-def pair_val(solvers, models, keys, val_input, val_label):
-    for index in range(len(models)):
-        key = keys[index]
-        # 当前两个求解器的名字
-        solver1 = key[0]
-        solver2 = key[2]
-        val_X = val_input[index]
-        val_y = val_label[index]
-        predict_y = models[index].predict(val_X)
-        print()
-        input()
+def pair_val(models, keys, val_input, val_label,args):
+    val_X = val_input
+    val_y = val_label
+    ans = []
+    solvers ={}
+    for i in range(args.NumberSolver):
+        solvers[str(i)] = 0
+    val_instance = len(val_input)
+    for i in range(val_instance):
+        for j in range(len(models)):
+            key = keys[j]
+            solver1 = key[0]
+            solver2 = key[2]
+            predict_y = models[j].predict(val_X)
+            # 验证实例在每一种求解器组合下都有一个预测
+            if predict_y[i] == 1:
+                solvers[solver1] += 1
+            if predict_y[i] == -1:
+                solvers[solver2] += 1
+        ans.append(max(solvers, key=solvers.get))
+        print(solvers)
+        print(ans)
+        # 重置solvers
+        for i in range(args.NumberSolver):
+            solvers[str(i)] = 0
+    input()
 
 def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
@@ -235,7 +250,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 score.append(model.score(val_X, val_y))
                 time += 1
                 # 在最后一折的数据很难验证
-            print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
+            print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
 
         if args.ModelType == 'QDA':
             # 二次判别分析 0.50
@@ -330,15 +345,11 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     elif args.LabelType == 'pair':
         weights, X, ys = get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
         if args.ModelType == 'GBDT':
-            solvers = {}
-            for i in range(args.NumberSolver):
-                solvers[str(i)] = 0
             models = []
             val_input = []
             val_label = []
             keys = []
             scores = []
-            model = GradientBoostingClassifier(n_estimators=10)
             kf = KFold(n_splits=args.NumCrossValidation)
             time = 1
             for train_index, val_index in kf.split(X):
@@ -350,17 +361,17 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                         key = str(i) + ',' + str(j)
                         y = ys[key]
                         weight = weights[key]
+                        model = GradientBoostingClassifier(n_estimators=100)
                         train_X, train_y = X[train_index], y[train_index]
                         val_X, val_y = X[val_index], y[val_index]
                         train_weight = weight[train_index,]
                         model.fit(train_X, train_y, sample_weight=train_weight)
                         models.append(model)
                         keys.append(key)
-                        if time == 10:
-                            val_input.append(val_X)
-                            val_label.append(val_y)
+                        val_input.append(val_X)
+                        val_label.append(val_y)
                 time += 1
-                score = pair_val(solvers, models, keys, val_input, val_label)
+                score = pair_val(models, keys, val_input[0], val_label[0],args)
                 scores.append(score)
             print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
