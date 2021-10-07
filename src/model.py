@@ -12,7 +12,7 @@ from sklearn.svm import SVC
 from xgboost import XGBClassifier
 from src.util import time2score, normal_feature_data_process
 import sklearn
-
+import random
 
 # np.set_printoptions(threshold=1e6)
 
@@ -123,36 +123,74 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
         return weight, X, y
 
 
-def pair_val(models, keys, val_input, val_label,args):
+def pair_val(models, keys, val_input, val_label, args):
+    # models list 长度 求解器组合数  每个都是一个GBDT
+    # eg {'0,1': GradientBoostingClassifier(n_estimators=10), '0,2': Gradie
     val_X = val_input
+    # shape (验证集实例数,特征列数) 验证集输入
     val_y = val_label
+    # list 每个都是 (验证集实例数,)
+    # eg '0,1': array([ 1,  1, -1,  1,  1,  1,
     ans = []
-    solvers ={}
-    for i in range(args.NumberSolver):
-        solvers[str(i)] = 0
+    solvers_counter ={}
+    ss_solvers_counter = {}
+    # 多候选求解器
     val_instance = len(val_input)
     for i in range(val_instance):
+        # 对每个验证集实例进行预测
+        for index in range(args.NumberSolver):
+            solvers_counter[str(index)] = 0
+            # 初始化求解器的获胜数 计数器
         for j in range(len(models)):
+            # 遍历求解器组合数 这么多的模型
             key = keys[j]
             solver1 = key[0]
             solver2 = key[2]
-            predict_y = models[j].predict(val_X)
+            predict_y = models[key].predict(val_X)
+            # list 长度 验证集实例数 值为1/-1
             # 验证实例在每一种求解器组合下都有一个预测
             if predict_y[i] == 1:
-                solvers[solver1] += 1
+                solvers_counter[solver1] += 1
             if predict_y[i] == -1:
-                solvers[solver2] += 1
+                solvers_counter[solver2] += 1
         # 如何处理相同胜出数的求解器
-        ans.append(max(solvers, key=solvers.get))
-        print(solvers)
-        print(ans)
-        # 重置solvers
-        for i in range(args.NumberSolver):
-            solvers[str(i)] = 0
+        print("solvers",solvers_counter)
+        max_solved = max(solvers_counter.values())
+        # 最强求解器的获胜数
+        good_solvers = [k for k, v in solvers_counter.items() if v == max_solved]
+        print("good_solvers",good_solvers)
+        # 获取最强求解器列表
+        if len(good_solvers) != 1:
+            # 有多个拥有同样胜出数的求解器 再互相比一次 不行就随机选
+            ss_solver = len(good_solvers)
+            for i in range(ss_solver):
+                solvers_counter[str(i)] = 0
+            # 初始化强强争霸 计数器
+            for i in range(ss_solver):
+                for j in range(i+1, ss_solver):
+                    # 遍历所有的强强求解器组合
+                    key = str(i) + ',' +str(j)
+                    solver1 = key[0]
+                    solver2 = key[2]
+                    # 取模型
+                    print("小key", key)
+                    ss_predict_y = models[key].predict(val_X)
+                    print("小predict_y",predict_y)
+                    # list 长度 验证集实例数 值为1/-1
+                    if ss_predict_y[i] == 1:
+                        solvers_counter[solver1] += 1
+                    if predict_y[i] == -1:
+                        solvers_counter[solver2] += 1
+            ss_max_solved = max(solvers_counter.values())
+            ss_good_solvers = [k for k, v in solvers_counter.items() if v == ss_max_solved]
+            if len(good_solvers) != 1:
+                good_solvers = random.sample(good_solvers, 1)
     input()
+                # 如果还不能确定最佳求解器
 
 def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
+    global models
     if args.LabelType == 'single':
         weight, X, y = get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
         if args.ModelType == 'RF':
@@ -346,9 +384,9 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     elif args.LabelType == 'pair':
         weights, X, ys = get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
         if args.ModelType == 'GBDT':
-            models = []
+            models = {}
             val_input = []
-            val_label = []
+            val_label = {}
             keys = []
             scores = []
             kf = KFold(n_splits=args.NumCrossValidation)
@@ -367,12 +405,12 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                         val_X, val_y = X[val_index], y[val_index]
                         train_weight = weight[train_index,]
                         model.fit(train_X, train_y, sample_weight=train_weight)
-                        models.append(model)
+                        models[key]=model
                         keys.append(key)
                         val_input.append(val_X)
-                        val_label.append(val_y)
+                        val_label[key] = val_y
                 time += 1
-                score = pair_val(models, keys, val_input[0], val_label[0],args)
+                score = pair_val(models, keys, val_input[0], val_label, args)
                 scores.append(score)
             print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
