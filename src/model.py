@@ -14,6 +14,7 @@ from src.util import time2score, normal_feature_data_process
 import sklearn
 import random
 
+
 # np.set_printoptions(threshold=1e6)
 
 
@@ -134,15 +135,13 @@ def pair_val(models, keys, val_input, val_label, args):
     val_X = val_input
     # shape (验证集实例数,特征列数) 验证集输入
     val_y = val_label
-    print(val_y)
     # list 每个都是 (验证集实例数,)
     # eg '0,1': array([ 1,  1, -1,  1,  1,  1,
     ans = []
-    solvers_counter ={}
+    solvers_counter = {}
     # 多候选求解器
     val_final_winner = []
     val_instance = len(val_input)
-    print("验证集输入", val_input)
     for i_inst in range(val_instance):
         # 对每个验证集实例进行预测
         ss_solvers_counter = {}
@@ -155,7 +154,6 @@ def pair_val(models, keys, val_input, val_label, args):
             solver1 = key[0]
             solver2 = key[2]
             predict_y = models[key].predict(val_X)
-            print("第"+str(i_inst)+'个实例的15种组合预测',predict_y)
             # list 长度 验证集实例数 值为1/-1
             # 验证实例在每一种求解器组合下都有一个预测
             if predict_y[i_inst] == 1:
@@ -163,11 +161,9 @@ def pair_val(models, keys, val_input, val_label, args):
             if predict_y[i_inst] == -1:
                 solvers_counter[solver2] += 1
         # 如何处理相同胜出数的求解器
-        print("求解器计数器",solvers_counter)
         max_solved = max(solvers_counter.values())
         # 最强求解器的获胜数
         good_solvers = [k for k, v in solvers_counter.items() if v == max_solved]
-        print("第"+str(i_inst)+'个实例的最佳求解器',good_solvers)
         # 获取最强求解器列表
         if len(good_solvers) != 1:
             # 有多个拥有同样胜出数的求解器 再互相比一次 不行就随机选
@@ -177,41 +173,37 @@ def pair_val(models, keys, val_input, val_label, args):
                 ss_solvers_counter[str(good_solvers[i])] = 0
             # 初始化强强争霸 计数器
             for i in range(ss_solver):
-                for j in range(i+1, ss_solver):
+                for j in range(i + 1, ss_solver):
                     # 遍历所有的强强求解器组合
-                    key = str(good_solvers[i]) + ',' +str(good_solvers[j])
+                    key = str(good_solvers[i]) + ',' + str(good_solvers[j])
                     solver1 = key[0]
                     solver2 = key[2]
                     # 取模型
-                    print("小key", key)
                     ss_predict_y = models[key].predict(val_X)
-                    print("第"+str(i_inst)+'个实例的小predict_y' ,ss_predict_y)
                     # list 长度 验证集实例数 值为1/-1
                     if ss_predict_y[i_inst] == 1:
                         ss_solvers_counter[solver1] += 1
                     if ss_predict_y[i_inst] == -1:
                         ss_solvers_counter[solver2] += 1
-            print("小计数器",ss_solvers_counter)
             ss_max_solved = max(ss_solvers_counter.values())
             ss_good_solvers = [k for k, v in ss_solvers_counter.items() if v == ss_max_solved]
-            print("小胜者",ss_good_solvers)
-            print("old", good_solvers)
+            # print("小胜者",ss_good_solvers)
+            # print("old", good_solvers)
             if len(ss_good_solvers) != 1:
                 good_solvers = random.sample(ss_good_solvers, 1)
             else:
                 good_solvers = ss_good_solvers
-            print("new", good_solvers)
-            print("第"+str(i_inst)+'个实例的最终胜者' ,good_solvers)
+            # print("new", good_solvers)
         val_final_winner.extend(good_solvers)
-    print("最终结果",val_final_winner)
-    assert  len(val_y) == len(val_final_winner)
+    assert len(val_y) == len(val_final_winner)
     ans_counter = 0
     for final_i in range(len(val_y)):
         if int(val_y[final_i]) == int(val_final_winner[final_i]):
             ans_counter += 1
-    final_socre = ans_counter/len(val_y)
+    final_socre = ans_counter / len(val_y)
     print(ans_counter, len(val_y), final_socre)
     return final_socre
+
 
 def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
@@ -240,7 +232,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
 
         if args.ModelType == 'AdaBoost':
             # SVM模型
-            model = AdaBoostClassifier() # 0.39
+            model = AdaBoostClassifier()  # 0.39
             # 十折交叉验证
             score = []
             time = 1
@@ -260,7 +252,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
             # SVM模型
             # model = SVC(kernel='rbf', C=1.0, gamma='auto') # 0.50
             # model = SVC(kernel="linear", C=0.025) # 归一化后 0.569
-            model = SVC(gamma=2, C=1) # 归一化后 0.625
+            model = SVC(gamma=2, C=1)  # 归一化后 0.614
             # 十折交叉验证
             score = []
             time = 1
@@ -300,7 +292,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
 
         if args.ModelType == 'GBDT':
             # 梯度提升决策树
-            model = GradientBoostingClassifier(n_estimators=200) # 未归一化 0.675 # 归一化 0.688
+            model = GradientBoostingClassifier(n_estimators=200)  # 未归一化 0.675 # 归一化 0.688
             # 10折交叉验证
             score = []
             time = 1
@@ -354,7 +346,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
 
         if args.ModelType == 'MNBC':
             # 多项朴素贝叶斯分类器
-            model = MultinomialNB(alpha=0.01) # 归一化后 0.67+
+            model = MultinomialNB(alpha=0.01)  # 归一化后 0.67+
             # 10折交叉验证
             score = []
             time = 1
@@ -407,11 +399,11 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
             print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
 
     elif args.LabelType == 'pair':
-        weights, X, ys ,label_new= get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
+        weights, X, ys, label_new = get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature,
+                                                           args)
         if args.ModelType == 'GBDT':
             models = {}
             val_input = []
-            val_label = []
             keys = []
             scores = []
             kf = KFold(n_splits=args.NumCrossValidation)
@@ -420,29 +412,57 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 print('第' + str(time) + "折交叉验证...")
                 for i in range(args.NumberSolver):
                     for j in range(i + 1, args.NumberSolver):
-                        print("为求解器"+str(i) + ' 和 ' + "求解器 "+str(j)+" 生成模型")
+                        print("为求解器" + str(i) + ' 和 ' + "求解器 " + str(j) + " 生成模型")
                         # 取出标签和权重
                         key = str(i) + ',' + str(j)
                         y = ys[key]
                         weight = weights[key]
-                        model = GradientBoostingClassifier(n_estimators=100)
+                        model = GradientBoostingClassifier(n_estimators=10)
                         train_X, train_y = X[train_index], y[train_index]
                         val_X, val_y = X[val_index], label_new[val_index]
                         train_weight = weight[train_index,]
                         model.fit(train_X, train_y, sample_weight=train_weight)
-                        models[key]=model
+                        models[key] = model
                         keys.append(key)
-                        val_input.append(val_X)
-                        val_label.append(val_y)
+                        val_input = val_X
+                        val_label = val_y
                 time += 1
-                print('第' + str(time) + "折交叉验证...")
-                print("val_index", val_index)
-                print("val_label[0]",val_label[0])
-                score = pair_val(models, keys, val_input[0], val_label[0], args)
+                score = pair_val(models, keys, val_input, val_label, args)
                 scores.append(score)
                 print(scores)
-            print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
+            print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
+        if args.ModelType == 'RF':
+            # 归一化 0.683
+            models = {}
+            val_input = []
+            keys = []
+            scores = []
+            kf = KFold(n_splits=args.NumCrossValidation)
+            time = 1
+            for train_index, val_index in kf.split(X):
+                print('第' + str(time) + "折交叉验证...")
+                for i in range(args.NumberSolver):
+                    for j in range(i + 1, args.NumberSolver):
+                        print("为求解器" + str(i) + ' 和 ' + "求解器 " + str(j) + " 生成模型")
+                        # 取出标签和权重
+                        key = str(i) + ',' + str(j)
+                        y = ys[key]
+                        weight = weights[key]
+                        model = RandomForestClassifier(n_estimators=100)
+                        train_X, train_y = X[train_index], y[train_index]
+                        val_X, val_y = X[val_index], label_new[val_index]
+                        train_weight = weight[train_index,]
+                        model.fit(train_X, train_y, sample_weight=train_weight)
+                        models[key] = model
+                        keys.append(key)
+                        val_input = val_X
+                        val_label = val_y
+                time += 1
+                score = pair_val(models, keys, val_input, val_label, args)
+                scores.append(score)
+                print(scores)
+            print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
 def judge_solver(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择

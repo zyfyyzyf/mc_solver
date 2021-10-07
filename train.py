@@ -16,9 +16,9 @@ parser.add_argument("--TrainDataset",
 parser.add_argument("--OutputDir",
                     help="输出目录", type=str, default="save_model")
 parser.add_argument("--ModelType",
-                    help="模型类型", type=str, default="GBDT")
+                    help="模型类型", type=str, default="LR")
 parser.add_argument("--LabelType",
-                    help="标签类型(两两成对还是整个一体)", type=str, default="pair")
+                    help="标签类型(两两成对还是整个一体)", type=str, default="single")
 parser.add_argument("--FeatureCutoff",
                     help="特征计算时间阈值", type=int, default=180)
 parser.add_argument("--AllCutoff",
