@@ -270,11 +270,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
 
         if args.ModelType == 'LR':
             # 逻辑回归模型
-            model = LogisticRegression(penalty='l1',
-                                       dual=False, tol=0.0001, C=1.0, fit_intercept=True,
-                                       intercept_scaling=1, class_weight=None,
-                                       random_state=None, solver='liblinear', max_iter=10000,
-                                       multi_class='ovr', verbose=0, warm_start=False, n_jobs=1)
+            model = LogisticRegression() # 归一化 0.56 # 不归一化 0.54
             # 10折交叉验证
             score = []
             time = 1
@@ -450,6 +446,38 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                         y = ys[key]
                         weight = weights[key]
                         model = RandomForestClassifier(n_estimators=100)
+                        train_X, train_y = X[train_index], y[train_index]
+                        val_X, val_y = X[val_index], label_new[val_index]
+                        train_weight = weight[train_index,]
+                        model.fit(train_X, train_y, sample_weight=train_weight)
+                        models[key] = model
+                        keys.append(key)
+                        val_input = val_X
+                        val_label = val_y
+                time += 1
+                score = pair_val(models, keys, val_input, val_label, args)
+                scores.append(score)
+                print(scores)
+            print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
+
+        if args.ModelType == 'XGB':
+            # 归一化 0.66
+            models = {}
+            val_input = []
+            keys = []
+            scores = []
+            kf = KFold(n_splits=args.NumCrossValidation)
+            time = 1
+            for train_index, val_index in kf.split(X):
+                print('第' + str(time) + "折交叉验证...")
+                for i in range(args.NumberSolver):
+                    for j in range(i + 1, args.NumberSolver):
+                        print("为求解器" + str(i) + ' 和 ' + "求解器 " + str(j) + " 生成模型")
+                        # 取出标签和权重
+                        key = str(i) + ',' + str(j)
+                        y = ys[key]
+                        weight = weights[key]
+                        model = XGBClassifier()
                         train_X, train_y = X[train_index], y[train_index]
                         val_X, val_y = X[val_index], label_new[val_index]
                         train_weight = weight[train_index,]
