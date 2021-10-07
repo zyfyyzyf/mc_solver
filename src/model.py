@@ -76,7 +76,7 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
     # 制作输入数据
     X = Train_feature.copy()
     # 对数据进行归一化
-    # X = normal_feature_data_process(X)
+    X = normal_feature_data_process(X)
     # shape (训练实例数,清洗后的特征列数)  删去无用的列，在列的维度上归一化
     X = X[choice, :]
     # shape (需要训练实例数,清洗后的特征列数)
@@ -88,6 +88,11 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
         weights = {}
         score = time2score(Train_solver_runtime, args.AllCutoff)
         labels = {}
+        label_new = np.zeros(shape=(train_instance,), dtype=int)
+        foo = np.argmin(Train_solver_runtime, axis=1)
+        for i in range(train_instance):
+            label_new[i] = foo[i]
+        label_new = label_new[choice,]
         for i in range(args.NumberSolver):
             for j in range(i + 1, args.NumberSolver):
                 y = np.ones(shape=(train_instance,), dtype=int)
@@ -105,7 +110,7 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
                 key = str(i) + "," + str(j)
                 labels[key] = y
                 weights[key] = weight
-        return weights, X, labels
+        return weights, X, labels, label_new
 
     elif args.LabelType == 'single':
         # 单标签类型
@@ -129,6 +134,7 @@ def pair_val(models, keys, val_input, val_label, args):
     val_X = val_input
     # shape (验证集实例数,特征列数) 验证集输入
     val_y = val_label
+    print(val_y)
     # list 每个都是 (验证集实例数,)
     # eg '0,1': array([ 1,  1, -1,  1,  1,  1,
     ans = []
@@ -175,7 +181,6 @@ def pair_val(models, keys, val_input, val_label, args):
                     # 遍历所有的强强求解器组合
                     key = str(good_solvers[i]) + ',' +str(good_solvers[j])
                     solver1 = key[0]
-                    26391X
                     solver2 = key[2]
                     # 取模型
                     print("小key", key)
@@ -199,7 +204,14 @@ def pair_val(models, keys, val_input, val_label, args):
             print("第"+str(i_inst)+'个实例的最终胜者' ,good_solvers)
         val_final_winner.extend(good_solvers)
     print("最终结果",val_final_winner)
-    input()
+    assert  len(val_y) == len(val_final_winner)
+    ans_counter = 0
+    for final_i in range(len(val_y)):
+        if int(val_y[final_i]) == int(val_final_winner[final_i]):
+            ans_counter += 1
+    final_socre = ans_counter/len(val_y)
+    print(ans_counter, len(val_y), final_socre)
+    return final_socre
 
 def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
@@ -395,11 +407,11 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
             print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
 
     elif args.LabelType == 'pair':
-        weights, X, ys = get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
+        weights, X, ys ,label_new= get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
         if args.ModelType == 'GBDT':
             models = {}
             val_input = []
-            val_label = {}
+            val_label = []
             keys = []
             scores = []
             kf = KFold(n_splits=args.NumCrossValidation)
@@ -415,16 +427,20 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                         weight = weights[key]
                         model = GradientBoostingClassifier(n_estimators=100)
                         train_X, train_y = X[train_index], y[train_index]
-                        val_X, val_y = X[val_index], y[val_index]
+                        val_X, val_y = X[val_index], label_new[val_index]
                         train_weight = weight[train_index,]
                         model.fit(train_X, train_y, sample_weight=train_weight)
                         models[key]=model
                         keys.append(key)
                         val_input.append(val_X)
-                        val_label[key] = val_y
+                        val_label.append(val_y)
                 time += 1
-                score = pair_val(models, keys, val_input[0], val_label, args)
+                print('第' + str(time) + "折交叉验证...")
+                print("val_index", val_index)
+                print("val_label[0]",val_label[0])
+                score = pair_val(models, keys, val_input[0], val_label[0], args)
                 scores.append(score)
+                print(scores)
             print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
 
