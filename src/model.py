@@ -76,7 +76,7 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
     # 制作输入数据
     X = Train_feature.copy()
     # 对数据进行归一化
-    X = normal_feature_data_process(X)
+    # X = normal_feature_data_process(X)
     # shape (训练实例数,清洗后的特征列数)  删去无用的列，在列的维度上归一化
     X = X[choice, :]
     # shape (需要训练实例数,清洗后的特征列数)
@@ -133,11 +133,13 @@ def pair_val(models, keys, val_input, val_label, args):
     # eg '0,1': array([ 1,  1, -1,  1,  1,  1,
     ans = []
     solvers_counter ={}
-    ss_solvers_counter = {}
     # 多候选求解器
+    val_final_winner = []
     val_instance = len(val_input)
-    for i in range(val_instance):
+    print("验证集输入", val_input)
+    for i_inst in range(val_instance):
         # 对每个验证集实例进行预测
+        ss_solvers_counter = {}
         for index in range(args.NumberSolver):
             solvers_counter[str(index)] = 0
             # 初始化求解器的获胜数 计数器
@@ -147,46 +149,57 @@ def pair_val(models, keys, val_input, val_label, args):
             solver1 = key[0]
             solver2 = key[2]
             predict_y = models[key].predict(val_X)
+            print("第"+str(i_inst)+'个实例的15种组合预测',predict_y)
             # list 长度 验证集实例数 值为1/-1
             # 验证实例在每一种求解器组合下都有一个预测
-            if predict_y[i] == 1:
+            if predict_y[i_inst] == 1:
                 solvers_counter[solver1] += 1
-            if predict_y[i] == -1:
+            if predict_y[i_inst] == -1:
                 solvers_counter[solver2] += 1
         # 如何处理相同胜出数的求解器
-        print("solvers",solvers_counter)
+        print("求解器计数器",solvers_counter)
         max_solved = max(solvers_counter.values())
         # 最强求解器的获胜数
         good_solvers = [k for k, v in solvers_counter.items() if v == max_solved]
-        print("good_solvers",good_solvers)
+        print("第"+str(i_inst)+'个实例的最佳求解器',good_solvers)
         # 获取最强求解器列表
         if len(good_solvers) != 1:
             # 有多个拥有同样胜出数的求解器 再互相比一次 不行就随机选
             ss_solver = len(good_solvers)
+            ss_solvers_counter = {}
             for i in range(ss_solver):
-                solvers_counter[str(i)] = 0
+                ss_solvers_counter[str(good_solvers[i])] = 0
             # 初始化强强争霸 计数器
             for i in range(ss_solver):
                 for j in range(i+1, ss_solver):
                     # 遍历所有的强强求解器组合
-                    key = str(i) + ',' +str(j)
+                    key = str(good_solvers[i]) + ',' +str(good_solvers[j])
                     solver1 = key[0]
+                    26391X
                     solver2 = key[2]
                     # 取模型
                     print("小key", key)
                     ss_predict_y = models[key].predict(val_X)
-                    print("小predict_y",predict_y)
+                    print("第"+str(i_inst)+'个实例的小predict_y' ,ss_predict_y)
                     # list 长度 验证集实例数 值为1/-1
-                    if ss_predict_y[i] == 1:
-                        solvers_counter[solver1] += 1
-                    if predict_y[i] == -1:
-                        solvers_counter[solver2] += 1
-            ss_max_solved = max(solvers_counter.values())
-            ss_good_solvers = [k for k, v in solvers_counter.items() if v == ss_max_solved]
-            if len(good_solvers) != 1:
-                good_solvers = random.sample(good_solvers, 1)
+                    if ss_predict_y[i_inst] == 1:
+                        ss_solvers_counter[solver1] += 1
+                    if ss_predict_y[i_inst] == -1:
+                        ss_solvers_counter[solver2] += 1
+            print("小计数器",ss_solvers_counter)
+            ss_max_solved = max(ss_solvers_counter.values())
+            ss_good_solvers = [k for k, v in ss_solvers_counter.items() if v == ss_max_solved]
+            print("小胜者",ss_good_solvers)
+            print("old", good_solvers)
+            if len(ss_good_solvers) != 1:
+                good_solvers = random.sample(ss_good_solvers, 1)
+            else:
+                good_solvers = ss_good_solvers
+            print("new", good_solvers)
+            print("第"+str(i_inst)+'个实例的最终胜者' ,good_solvers)
+        val_final_winner.extend(good_solvers)
+    print("最终结果",val_final_winner)
     input()
-                # 如果还不能确定最佳求解器
 
 def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
