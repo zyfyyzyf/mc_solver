@@ -6,13 +6,13 @@ def test_presolve(test_result, all_file):
         # 测试两个预求解器
         file_path = '/home/mc_zilla/data/raw_data/test_data/' + all_file[81]
         print(file_path)
-        status =subprocess.call(['timeout', '2', 'time', "./count_noproj_bareganak", '<', file_path])
+        status =subprocess.call(['timeout', '10', 'time', "./count_noproj_bareganak", '<', file_path])
         print("status1",status)
         if status == 0:
             test_result[all_file[i]] = 2
             continue
         else:
-           status =subprocess.call(['timeout', '30', 'time', "./sharpSAT", '-decot', '1','-decow','100','-tmpdir','.','cs','32000', file_path])
+           status =subprocess.call(['timeout', '10', 'time', "./sharpSAT", '-decot', '1','-decow','100','-tmpdir','.','cs','32000', file_path])
            print("status1",status)
            if status == 0:
                test_result[all_file[i]] = 5
