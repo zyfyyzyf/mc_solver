@@ -2,7 +2,14 @@ from collections import Counter
 
 import numpy as np
 
-
+import re
+def sort_key(s):
+    #sort_strings_with_embedded_numbers
+    re_digits = re.compile(r'(\d+)')
+    pieces = re_digits.split(s)  # 切成数字与非数字
+    pieces[1::2] = map(int, pieces[1::2])  # 将数字部分转成整数
+    return pieces
+    
 def time2score(time_data, cutoff):
     outscore = time_data.copy()
     # print(time_data)

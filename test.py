@@ -14,13 +14,13 @@ from  src.test_process import infer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--TestDataset",
-                    help="测试集位置", type=str, default="data/raw_data/test_data")
+                    help="测试集位置", type=str, default="/home/mc_zilla/data/raw_data/test_data")
 parser.add_argument("--ModelDir",
                     help="模型目录", type=str, default="save_model")
 parser.add_argument("--NumberSolver",
                     help="求解器数", type=int, default=6)
 args = parser.parse_args()
-
+'''
 # 加载模型
 model_feat_time_path = args.ModelDir + '/' + "model_feat_time.npy"
 model_solver_path = args.ModelDir + '/' + "model_solver.npz"
@@ -35,7 +35,7 @@ Test_solver_runtime = data['Test_solver_runtime']
 Test_feature = data['Test_feature']
 Test_simple_feature = data['Test_simple_feature']
 Test_feature_time = data['Test_feature_time']
-
-infer(solver_model, Test_solver_runtime, Test_feature, Test_feature, args)
+'''
+infer(args.TestDataset)
 
 
