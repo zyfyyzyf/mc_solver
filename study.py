@@ -14,5 +14,6 @@ def cc(oj):
 cat = Cat("tom")
 cat.sayHi()
 cc(cat)
+# okkk
 cat.sayHi()
 
