@@ -6,13 +6,15 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold
 import math
 
-from src.model import judge_feature_time, judge_solver, infer
+from src.model import judge_feature_time, judge_solver
 from src.read_file import read_file
 from src.util import normal_feature_data_process
+from  src.test_process import infer
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--TestDataset",
-                    help="测试集位置", type=str, default="data/cleaned_data/test_data_cleaned.npz")
+                    help="测试集位置", type=str, default="data/raw_data/test_data")
 parser.add_argument("--ModelDir",
                     help="模型目录", type=str, default="save_model")
 parser.add_argument("--NumberSolver",

@@ -1,3 +1,9 @@
+import os
+def test_presolve(TestDataset):
+     print()
+     fileList = os.listdir(TestDataset)
+     print(fileList)
+
 def infer(models, Test_solver_runtime, Test_feature_time, Test_feature, args):
     # 模型在测试集上的表现
 
@@ -11,9 +17,9 @@ def infer(models, Test_solver_runtime, Test_feature_time, Test_feature, args):
     for index in range(test_instance):
         # 对每个实例预测
         # 先判断实例是否能由预求解器求解器
-        test
-        for i in range(args.NumberSolver):
-            for j in range(i + 1, args.NumberSolver):
-                key = str(i) + "," + str(j)
-                print(key)
-                model = models[key]
+        test_presolve(args.TestDataset)
+        # for i in range(args.NumberSolver):
+        #     for j in range(i + 1, args.NumberSolver):
+        #         key = str(i) + "," + str(j)
+        #         print(key)
+        #         model = models[key]
