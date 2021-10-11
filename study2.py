@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import os
 import argparse
 import numpy as np
@@ -75,3 +76,5 @@ solver_model = judge_solver(Train_solver_runtime, Train_feature_time, Train_feat
 
 # joblib.dump(feat_time_model, r'save_model/feat_time_model.pkl')
 joblib.dump(solver_model, r'save_model/solver_model.pkl')
+=======
+>>>>>>> 5537ff6a244602ca6e5c6df7451b276ba4ecc6ab
