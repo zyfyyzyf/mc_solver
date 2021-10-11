@@ -1,10 +1,18 @@
 class Cat(object):
-    def __init__(self, name='Kitty'):
+    def __init__(self, name):
         self.name = name
 
     def sayHi(self):
         print(self.name, 'says Hi!')
+    
+    def change(self,st):
+        self.name = st
 
-cat = Cat()
+def cc(oj):
+    oj.change('jack')
 
-print(Cat.sayHi())
+cat = Cat("tom")
+cat.sayHi()
+cc(cat)
+cat.sayHi()
+
