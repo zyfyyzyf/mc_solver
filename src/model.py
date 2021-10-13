@@ -10,7 +10,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
-from src.util import time2score, normal_feature_data_process
+from src.util import time2score, del_constant_col, data_normalization
 import sklearn
 import random
 
@@ -19,7 +19,7 @@ import random
 
 
 # 训练随机森林判断实例是否能计算特征时间
-def judge_feature_time(Train_feature_time, args):
+def judge_feature_time(Train_simple_feature, Train_feature_time, args):
     train_instance = Train_feature_time.shape[0]
     # 生成随机森林模型
     model_feat_time = RandomForestClassifier(n_estimators=100)
@@ -33,8 +33,10 @@ def judge_feature_time(Train_feature_time, args):
     # y shape (训练实例数, ) 值为-1表明特征计算不超时 1表明特征计算超时
 
     # 制作输入数据
-    X = np.expand_dims(Train_feature_time, axis=1).copy()
-    # X shape (训练实例数, 1)  每个实例的特征计算时间
+    # X = np.expand_dims(Train_feature_time, axis=1).copy()
+    X = Train_simple_feature
+    # X shape (训练实例数, 2)  每个实例的简单特征
+    print(y)
 
     # 进行交叉验证
     kf = KFold(n_splits=args.NumCrossValidation)
@@ -76,8 +78,10 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
 
     # 制作输入数据
     X = Train_feature.copy()
+    # 删除常数列(18个sp列)
+    X = del_constant_col(X)
     # 对数据进行归一化
-    X = normal_feature_data_process(X)
+    # X = data_normalization(X)
     # shape (训练实例数,清洗后的特征列数)  删去无用的列，在列的维度上归一化
     X = X[choice, :]
     # shape (需要训练实例数,清洗后的特征列数)
@@ -228,7 +232,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 score.append(model.score(val_X, val_y))
                 time += 1
                 # 在最后一折的数据很难验证
-            print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
+            print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score)) 
 
         if args.ModelType == 'AdaBoost':
             # SVM模型
@@ -425,7 +429,6 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 time += 1
                 score = pair_val(models, keys, val_input, val_label, args)
                 scores.append(score)
-                print(scores)
             print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
         if args.ModelType == 'RF':
@@ -457,7 +460,6 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 time += 1
                 score = pair_val(models, keys, val_input, val_label, args)
                 scores.append(score)
-                print(scores)
             print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
         if args.ModelType == 'XGB':
@@ -489,71 +491,11 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 time += 1
                 score = pair_val(models, keys, val_input, val_label, args)
                 scores.append(score)
-                print(scores)
             print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
+    return model 
 def judge_solver(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
-    model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args)
-    # '''
-    # train_instance = Train_feature_time.shape[0]
-    # models = {}
-    # # 先选择使用两个预求解器超时并且可以进行特征计算的实例
-    # choice = choice_ids(Train_feature_time, Train_solver_runtime, args)
-    # # list len 需要进行主求解器选择的实例  只有这些实例才需要进入求解器选择阶段
-    #
-    # # 制作输入数据
-    # X = Train_feature.copy()
-    # # 对数据进行归一化
-    # X = normal_feature_data_process(X)
-    # # shape (训练实例数,清洗后的特征列数)  删去无用的列，在列的维度上归一化
-    # X = X[choice, :]
-    # # shape (需要训练实例数,清洗后的特征列数)
-    #
-    # # 制作标签
-    # label = {}
-    # for i in range(args.NumberSolver):
-    #     for j in range(i + 1, args.NumberSolver):
-    #         y = np.ones(shape=(train_instance,), dtype=int)
-    #         # shape (训练实例数, ) 为每一种组合生成一个标签 求解器i比求解器j快 标签为1 否则为-1
-    #         for index in range(train_instance):
-    #             if Train_solver_runtime[index, i] > Train_solver_runtime[index, j]:
-    #                 y[index] = -1
-    #         # 对应的求解器名作为key 标签为value 保存到字典label中
-    #         # eg: '3,4': array (训练实例数, )
-    #         key = str(i) + "," + str(j)
-    #         label[key] = y
-    #
-    # # 生成 求解器数 * (求解器数-1) 个随机森林
-    # for i in range(args.NumberSolver):
-    #     for j in range(i + 1, args.NumberSolver):
-    #         print("为求解器 " + str(i) + " 和求解器 " + str(j) + "构建随机森林")
-    #         # kf = KFold(n_splits=args.NumCrossValidation)
-    #         # model_solver = SVC(kernel='rbf', C=1.0, gamma='auto')
-    #         model_solver = RandomForestClassifier(n_estimators=1000)
-    #         # 每一种组合一个随机森林
-    #         key = str(i) + "," + str(j)
-    #         y = label[key]
-    #         y = y[choice]
-    #         print(X.shape)
-    #         print(y.shape)
-    #         score = cross_val_score(model_solver, X, y, cv=10).mean()
-    #         print(score)
-    #         '''
-    #         for train_index, val_index in kf.split(X):
-    #             key = str(i) + "," + str(j)
-    #             y = label[key]
-    #             train_X, train_y = X[train_index], y[train_index]
-    #             val_X, val_y = X[val_index], y[val_index]
-    #             model_solver.fit(train_X, train_y)
-    #             score.append(model_solver.score(val_X, val_y))
-    #             # 在最后一折的数据很难验证
-    #         '''
-    #         # 保存模型
-    #         key = str(i) + "," + str(j)
-    #         models[key] = model_solver
-    #
-    # return models
-
-
-
+    model = model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args)
+    return model 
+   
