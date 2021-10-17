@@ -1,7 +1,7 @@
 from collections import Counter
 
 import numpy as np
-
+# np.set_printoptions(threshold = 1e6)
 import re
 def sort_key(s):
     #sort_strings_with_embedded_numbers
@@ -12,7 +12,6 @@ def sort_key(s):
     
 def time2score(time_data, cutoff):
     outscore = time_data.copy()
-    # print(time_data)
     number_instance = time_data.shape[0]
     number_solver = time_data.shape[1]
     for i in range(number_instance):
@@ -23,7 +22,7 @@ def time2score(time_data, cutoff):
     return outscore
 
 
-def normal_feature_data_process(feature_data):
+def del_constant_col(feature_data):
     fun_feature_data = feature_data.copy()
     number_instance = feature_data.shape[0]
     number_feature = feature_data.shape[1]
@@ -36,6 +35,10 @@ def normal_feature_data_process(feature_data):
     for i in range(number_feature):
         all_feature_col.append(i)
     cleaned_feature_data = np.delete(fun_feature_data, constant_col, axis=1)
+    return cleaned_feature_data
+
+def data_normalization(feature_data):
+    cleaned_feature_data = feature_data.copy()
     cleaned_feature_data_mean = np.mean(cleaned_feature_data, axis=0)
     cleaned_feature_data_std = np.std(cleaned_feature_data, axis=0)
     output_feature_data = (cleaned_feature_data - cleaned_feature_data_mean) / cleaned_feature_data_std
