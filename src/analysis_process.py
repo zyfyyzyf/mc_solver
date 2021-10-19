@@ -1,4 +1,120 @@
-def average_solve_time(test_result ,test_solved , test_time, test_label):
-    # mc_zilla
+import pandas as pd
+import numpy as np
+import matplotlib.mlab as mlab  
+import matplotlib.pyplot as plt  
+import seaborn as sns
+from src.util import draw_pie
+
+def average_model_solve_time(test_model_result ,test_model_solved, test_model_time):
+    all_model_time = 0
+    solved_count = 0
     for i in range(100):
-        ssh
+        # 如果可以求解
+        if test_model_solved[i] == True:
+           all_model_time += test_model_time[i]
+           solved_count += 1
+    average_model_time = all_model_time / solved_count
+
+def average_top1_solve_time(test_top1_solved, test_top1_time):
+    all_top1_time = 0
+    solved_count = 0
+    print(test_top1_solved)
+    for i in range(100):
+        # 如果可以求解
+        f_name = str(i) + '.cnf'
+        if test_top1_solved[f_name] == True:
+           all_top1_time += test_top1_time[f_name]
+           solved_count += 1
+    average_top1_time = all_top1_time / solved_count
+    print("top1求解实例数:",solved_count)
+    print("top1超时实例数:",100 - solved_count)
+    print("top1平均求解时间(s):",average_top1_time)
+    all_top1_time = all_top1_time / 60 / 60
+    print("top1总求解时间(h):",all_top1_time)
+
+def average_oracle_solve_time(test_oracle_solved, test_oracle_time):
+    all_oracle_time = 0
+    solved_count = 0
+    for i in range(100):
+        # 如果可以求解
+        f_name = str(i) + '.cnf'
+        if test_oracle_solved[f_name] == True:
+           all_oracle_time += test_oracle_time[f_name]
+           solved_count += 1
+    average_oracle_time = all_oracle_time / solved_count
+    print("oracle求解实例数:",solved_count)
+    print("oracle超时实例数:",100 - solved_count)
+    print("oracle平均求解时间(s):",average_oracle_time)
+    all_oracle_time = all_oracle_time / 60 / 60
+    print("oracle总求解时间(h):",all_oracle_time)   
+
+def analysis_2(test_model_result, test_model_stage, test_model_solved, test_model_time, args):
+    print("test_model_result", test_model_result)
+    print("test_model_solved", test_model_solved)
+    print("test_model_solved", test_model_solved)
+    component_solver_choice = {}
+    component_solver_solved = {}
+    component_solver_average_runtime = {}
+    for i in range(args.NumberSolver):
+        component_solver_choice[i] = 0
+        component_solver_solved[i] = 0
+        component_solver_average_runtime[i] = 0
+    for i in range(100):
+        f_name = str(i) + '.cnf'
+        component_solver_choice[test_model_result[f_name]] += 1
+        if test_model_solved[f_name] == True:
+            component_solver_solved[test_model_result[f_name]] += 1
+            component_solver_average_runtime[test_model_result[f_name]] += test_model_time[f_name]
+    for i in range(args.NumberSolver):
+        component_solver_average_runtime[i] = component_solver_average_runtime[i] / component_solver_solved[i]
+    print("组件求解器被选择情况",component_solver_choice)
+    print("组件求解器平均求解时间", component_solver_average_runtime)
+    print("被选择的组件求解器求解情况", component_solver_solved)
+
+def analysis_3_1(args):
+    component_solver_choice = {}
+    for i in range(args.NumberSolver):
+        component_solver_choice[i] = 0
+    analysis_data = pd.read_csv(args.label_file_path).values
+    del_col = []
+    del1 = 0
+    del2 = 2
+    for i in range(args.NumberSolver):
+        del_col.append(del1)
+        del_col.append(del2)
+        del1 += 3
+        del2 += 3 
+    analysis_data = np.delete(analysis_data, del_col, axis = 1)
+    for i in range(args.NumberSolver):
+        for j in range(100):
+            if analysis_data[j][i] != 1800:
+                component_solver_choice[i] += 1
+    pie_input = []
+    labels = []
+    for i in range(args.NumberSolver):
+        pie_input.append(component_solver_choice[i])
+    labels = ['c2d','nus_narasimha','d4', 'MCSim','sharpsat-td','count_bareganak']
+    explode =[0,0,0,0,0.4,0]
+    colors = ["blue","red","coral","green","yellow","orange"] 
+    draw_pie(pie_input, labels, explode, colors)
+
+def analysis_3_2(args):
+    analysis_data = pd.read_csv(args.label_file_path).values
+    del_col = []
+    del1 = 0
+    del2 = 2
+    for i in range(args.NumberSolver):
+        del_col.append(del1)
+        del_col.append(del2)
+        del1 += 3
+        del2 += 3 
+    analysis_data = np.delete(analysis_data, del_col, axis = 1)
+    analysis_data = analysis_data.astype(int)
+    col_name = ['c2d','nus_narasimha','d4', 'MCSim','sharpsat-td','count_bareganak']
+    analysis_data = pd.DataFrame(analysis_data, columns=col_name)
+    corr = analysis_data.corr('spearman')
+    print(corr)
+    f,ax = plt.subplots(figsize=(12,6))
+    fig = sns.heatmap(corr,annot=True)
+    scatter_fig = fig.get_figure()
+    scatter_fig.savefig("analysis_3_2.eps", dpi = 600)

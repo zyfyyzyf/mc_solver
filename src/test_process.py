@@ -46,6 +46,7 @@ def read_test_file(TestDataset_path):
         test_time[all_file[i]] = -1
         test_solved[all_file[i]] = False
     return all_file, test_result, test_solved, test_time
+
 def infer(feat_time_model, solver_model, TestDataset_path):
     # 模型在测试集上的表现
 
@@ -92,7 +93,7 @@ def infer(feat_time_model, solver_model, TestDataset_path):
                     feature_data = pd.read_csv("/home/mc_zilla/test_bin/test_feature.csv").values
                     # remove 0 7(pre) 22(basic) 43(klb) 54(cg) 60(dia) cl(79) sp(98) ls-sap(110) ls-gast(121) lob(124)  80-98
                     del_col = [0, 7, 22, 43, 54, 60, 79,  110, 122, 125] 
-                    for index in range(80,99):
+                    for index in range(80, 99):
                         del_col.append(index)
                     del_col.sort()
                     cleaned_feature_data = np.delete(feature_data, del_col, axis=1)
