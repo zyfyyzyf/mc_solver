@@ -45,3 +45,6 @@ analysis_3_2(args)
 '''
 # 分析3.3 主阶段求解器被选择的频率
 # 分析3.4 各个求解器的求解比率(pre和主阶段和备份分开)(被选择并能求解)
+'''
+# 分析3.5 求解时间CDF(VBS,oracle,mc_zilla,比赛第一名)
+draw_CDF(test_top1_time)
