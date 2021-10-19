@@ -2,8 +2,55 @@ from collections import Counter
 import matplotlib.mlab as mlab  
 import matplotlib.pyplot as plt  
 import numpy as np
+from matplotlib.font_manager import FontProperties
+from matplotlib.pyplot import MultipleLocator
+import pandas as pd 
 # np.set_printoptions(threshold = 1e6)
 import re
+def create_cdf_data(time_data):
+    input_data = []
+    for i in range(100):
+        f_name = str(i) + '.cnf'
+        if time_data[f_name] != 1800:
+            input_data.append(time_data[f_name])
+    data = pd.DataFrame(input_data)
+    denominator = 100
+    Data=pd.Series(data[0])
+    Fre=Data.value_counts()
+    Fre_sort=Fre.sort_index(axis=0,ascending=True)
+    Fre_df=Fre_sort.reset_index()
+    Fre_df[0]=Fre_df[0]/denominator
+    Fre_df.columns=['Rds','Fre']
+    Fre_df['cumsum']=np.cumsum(Fre_df['Fre'])
+    return Fre_df
+
+def draw_CDF(oracle_time_data, top1_time_data):
+    #创建画布
+    plot=plt.figure()
+    #只有一张图，也可以多张
+    ax1=plot.add_subplot(1,1,1)
+    #按照Rds列为横坐标，累计概率分布为纵坐标作图
+    ax1.plot(oracle_time_data['Rds'],oracle_time_data['cumsum'])
+    ax1.plot(top1_time_data['Rds'],top1_time_data['cumsum'])
+    font = FontProperties(fname='/System/Library/Fonts/STHeiti Light.ttc', size=16)
+    #图的标题
+    ax1.set_title("solve_time_CDF")
+    #横轴名
+    ax1.set_xlabel("solve_time")
+    #纵轴名
+    ax1.set_ylabel("solved %")
+    #横轴的界限
+    ax1.set_xlim(-100,1800)
+    ax1.set_ylim(0,1)
+    x_major_locator=MultipleLocator(200)
+    y_major_locator=MultipleLocator(0.1)
+    ax1.xaxis.set_major_locator(x_major_locator)
+    ax1.yaxis.set_major_locator(y_major_locator)
+    #图片显示
+    plt.grid()
+    plt.show()
+    # plt.savefig('analysis_3_5.eps', format='eps') 
+    plt.savefig('analysis_3_5.jpg')
 def sort_key(s):
     #sort_strings_with_embedded_numbers
     re_digits = re.compile(r'(\d+)')

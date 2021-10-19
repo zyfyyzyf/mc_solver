@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.mlab as mlab  
 import matplotlib.pyplot as plt  
 import seaborn as sns
-from src.util import draw_pie
+from src.util import draw_pie, draw_CDF, create_cdf_data
 
 def average_model_solve_time(test_model_result ,test_model_solved, test_model_time):
     all_model_time = 0
@@ -119,4 +119,7 @@ def analysis_3_2(args):
     scatter_fig = fig.get_figure()
     scatter_fig.savefig("analysis_3_2.eps", dpi = 600)
 
-def analysis_3_5():
+def analysis_3_5(test_oracle_time, test_top1_time):
+    top1_time_data = create_cdf_data(test_top1_time)
+    oracle_time_data = create_cdf_data(test_oracle_time)
+    draw_CDF(oracle_time_data, top1_time_data) 

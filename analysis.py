@@ -1,7 +1,7 @@
 import argparse
 
 from src.analysis_process import average_model_solve_time, average_top1_solve_time, average_oracle_solve_time
-from src.analysis_process import analysis_2, analysis_3_1, analysis_3_2
+from src.analysis_process import analysis_2, analysis_3_1, analysis_3_2,analysis_3_5
 from src.read_file import test_read_model_predict_file, test_read_oracle_file, test_read_top1_file
 parser = argparse.ArgumentParser()
 parser.add_argument("--NumberSolver",
@@ -47,4 +47,4 @@ analysis_3_2(args)
 # 分析3.4 各个求解器的求解比率(pre和主阶段和备份分开)(被选择并能求解)
 '''
 # 分析3.5 求解时间CDF(VBS,oracle,mc_zilla,比赛第一名)
-draw_CDF(test_top1_time)
+analysis_3_5(test_oracle_time, test_top1_time)

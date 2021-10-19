@@ -82,7 +82,7 @@ def test_read_oracle_file(args):
         f_name = str(i)+'.cnf'
         if  np.min(all_data[i]) == 1800:
             test_oracle_solved[f_name] = False
-            test_oracle_time[f_name] = -1
+            test_oracle_time[f_name] = 1800
             test_oracle_choice[f_name] = -1
         else:
             test_oracle_solved[f_name] = True
