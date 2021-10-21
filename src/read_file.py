@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+import pickle
 
 def read_file(filepath, number_solver, number_feature):
     df = pd.read_csv(filepath)
@@ -29,22 +29,23 @@ def read_file(filepath, number_solver, number_feature):
 
 def test_read_model_predict_file(args):
     # 加载标签
-    test_result = {}
-    test_stage = {}
-    test_solved = {}
-    test_time = {}
-    for i in range(100):
-        f_name = str(i) + '.cnf'
-        v = np.random.randint(0, 6, 1)[0]
-        v2 = np.random.randint(0, 2, 1)[0]
-        v2 = bool(v2)
-        v3 = np.random.uniform(low=0.0, high=1800.0, size=1)[0]
-        v3 = round(v3,2)
-        test_result[f_name] = v
-        test_solved[f_name] = v2
-        test_time[f_name] = v3
-        test_stage[f_name] = 'main'
-    return test_result ,test_stage ,test_solved, test_time
+    with open('save_model/test_model_result.pkl', 'rb') as f:
+        test_model_result = pickle.load(f)
+        # print("test_model_result", test_model_result)
+    
+    with open('save_model/test_model_stage.pkl', 'rb') as f:
+        test_model_stage = pickle.load(f)
+        # print("test_model_stage", test_model_stage)
+    
+    with open('save_model/test_model_solved.pkl', 'rb') as f:
+        test_model_solved = pickle.load(f)
+        # print("test_model_solved", test_model_solved)
+        
+    with open('save_model/test_model_time.pkl', 'rb') as f:
+        test_model_time = pickle.load(f)
+        # print("test_model_time", test_model_time)
+    
+    return test_model_result ,test_model_stage ,test_model_solved, test_model_time
 
 def test_read_top1_file(args):
     # 读取sharpsat-td

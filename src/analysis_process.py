@@ -8,17 +8,24 @@ from src.util import draw_pie, draw_CDF, create_cdf_data, draw_CDF_analysis_4
 def average_model_solve_time(test_model_result ,test_model_solved, test_model_time):
     all_model_time = 0
     solved_count = 0
+    print(test_model_time)
     for i in range(100):
         # 如果可以求解
-        if test_model_solved[i] == True:
-           all_model_time += test_model_time[i]
+        f_name = str(i) + '.cnf'
+        if test_model_solved[f_name] == True:
+           all_model_time += float(test_model_time[f_name])
            solved_count += 1
+        print(all_model_time)
     average_model_time = all_model_time / solved_count
+    print("mc_zilla求解实例数:",solved_count)
+    print("mc_zilla超时实例数:",100 - solved_count)
+    print("mc_zilla平均求解时间(s):",average_model_time)
+    all_model_time = all_model_time / 60 / 60
+    print("mc_zilla总求解时间(h):",all_model_time)
 
 def average_top1_solve_time(test_top1_solved, test_top1_time):
     all_top1_time = 0
     solved_count = 0
-    print(test_top1_solved)
     for i in range(100):
         # 如果可以求解
         f_name = str(i) + '.cnf'
