@@ -7,12 +7,15 @@ from matplotlib.pyplot import MultipleLocator
 import pandas as pd 
 # np.set_printoptions(threshold = 1e6)
 import re
-def create_cdf_data(time_data):
-    input_data = []
-    for i in range(100):
-        f_name = str(i) + '.cnf'
-        if time_data[f_name] != 1800:
-            input_data.append(time_data[f_name])
+def create_cdf_data(time_data,flag):
+    if flag == True:
+        input_data = []
+        for i in range(100):
+            f_name = str(i) + '.cnf'
+            if time_data[f_name] != 1800:
+                input_data.append(time_data[f_name])
+    else:
+        input_data = time_data
     data = pd.DataFrame(input_data)
     denominator = 100
     Data=pd.Series(data[0])
@@ -24,7 +27,7 @@ def create_cdf_data(time_data):
     Fre_df['cumsum']=np.cumsum(Fre_df['Fre'])
     return Fre_df
 
-def draw_CDF(oracle_time_data, top1_time_data):
+def draw_CDF(oracle_time_data, top1_time_data,f_name):
     #创建画布
     plot=plt.figure()
     #只有一张图，也可以多张
@@ -49,15 +52,42 @@ def draw_CDF(oracle_time_data, top1_time_data):
     #图片显示
     plt.grid()
     plt.show()
-    # plt.savefig('analysis_3_5.eps', format='eps') 
-    plt.savefig('analysis_3_5.jpg')
+    # plt.savefig("analysis_3_5.eps", format='eps') 
+    plt.savefig("analysis_3_5.png")
+
+def draw_CDF_analysis_4(data):
+    #创建画布
+    plot=plt.figure()
+    #只有一张图，也可以多张
+    ax1=plot.add_subplot(1,1,1)
+    #按照Rds列为横坐标，累计概率分布为纵坐标作图
+    ax1.plot(data['Rds'],data['cumsum'])
+    font = FontProperties(fname='/System/Library/Fonts/STHeiti Light.ttc', size=16)
+    #图的标题
+    ax1.set_title("feature_time_CDF")
+    #横轴名
+    ax1.set_xlabel("feature_time")
+    #纵轴名
+    ax1.set_ylabel("%")
+    #横轴的界限
+    ax1.set_xlim(-4,80)
+    ax1.set_ylim(0,1)
+    x_major_locator=MultipleLocator(5)
+    y_major_locator=MultipleLocator(0.1)
+    ax1.xaxis.set_major_locator(x_major_locator)
+    ax1.yaxis.set_major_locator(y_major_locator)
+    #图片显示
+    plt.grid()
+    plt.show()
+    # plt.savefig("analysis_4.eps", format='eps') 
+    plt.savefig("analysis_4.png")
 def sort_key(s):
     #sort_strings_with_embedded_numbers
     re_digits = re.compile(r'(\d+)')
     pieces = re_digits.split(s)  # 切成数字与非数字
     pieces[1::2] = map(int, pieces[1::2])  # 将数字部分转成整数
     return pieces
-    
+
 def time2score(time_data, cutoff):
     outscore = time_data.copy()
     number_instance = time_data.shape[0]

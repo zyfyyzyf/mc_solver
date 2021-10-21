@@ -5,15 +5,20 @@ import numpy as np
 import pandas as pd
 import joblib
 import time
-def test_presolve(test_result, test_solved, file, TestDataset_path):   
+def test_presolve(test_result, test_stage, test_solved, test_time, test_label,filename,TestDataset_path):   
     # 测试两个预求解器
     file_path = TestDataset_path + file
     print(file_path)
-    print("为实例 " ,file ,' 使用预求解器count_bareganak...')
-    status = subprocess.call(['timeout', '20', 'time', "./count_noproj_bareganak", '<', file_path],stdout = subprocess.PIPE,stderr = subprocess.STDOUT)
-    if status == 0:
-        test_result[file] = 2
-        test_solved[file] = True
+    print("为实例 " ,file ,' 使用预求解器nus_narasimha...')
+    # status = subprocess.call(['timeout', '20', 'time', "./count_noproj_bareganak", '<', file_path],stdout = subprocess.PIPE,stderr = subprocess.STDOUT)
+    pre1_solve_time = test_time[filename[0]][1]
+    if pre1_solve_time != 1800:
+       endtime = time.time()
+       dtime = endtime - starttime
+       if pre1_solve_time + dtime <= 1800:
+            test_result[filename] == 1
+            test_stage[filename] == 'pre1'
+            test_solved
     else:
         print("预求解器count_bareganak失败...")
         print("为实例" ,file,'使用预求解器sharpsat_td...')
@@ -39,19 +44,21 @@ def read_test_file(TestDataset_path):
         all_file.append(file)
         all_file = sorted(all_file,key=sort_key)
     test_result = {}
-    test_time ={}
+    test_stage = {}
     test_solved = {}
+    test_time ={}
     for i in range(len(all_file)):
         test_result[all_file[i]] = -1
-        test_time[all_file[i]] = -1
+        test_stage[all_file[i]] = 'null'
         test_solved[all_file[i]] = False
-    return all_file, test_result, test_solved, test_time
+        test_time[all_file[i]] = -1
+    return all_file, test_result, test_stage, test_solved, test_time
 
-def infer(feat_time_model, solver_model, TestDataset_path):
+def infer(feat_time_model, solver_model, test_label, TestDataset_path):
     # 模型在测试集上的表现
 
     # 读取测试文件并按顺序排序
-    all_file, test_result, test_solved, test_time = read_test_file(TestDataset_path)
+    all_file, test_result, test_stage, test_solved, test_time = read_test_file(TestDataset_path)
     # 判断能否计算特征
     for i in range(len(all_file)):
         # 为每个实例计时
@@ -60,7 +67,7 @@ def infer(feat_time_model, solver_model, TestDataset_path):
         print("开始求解实例 ",all_file[i],"...")
         # 使用两个预求解器预求解
         # 查表
-        test_result ,test_solved= test_presolve(test_result, test_solved, all_file[i], TestDataset_path)
+        test_result ,test_solved= test_presolve(test_result, test_stage, test_solved, test_time, test_label, all_file[i], TestDataset_path, starttime)
         with open(file, 'r' ) as f:
             print("判断实例 ",all_file[i],' 特征计算是否超时...')
             content = f.readlines()

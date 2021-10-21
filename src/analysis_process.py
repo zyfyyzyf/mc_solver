@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.mlab as mlab  
 import matplotlib.pyplot as plt  
 import seaborn as sns
-from src.util import draw_pie, draw_CDF, create_cdf_data
+from src.util import draw_pie, draw_CDF, create_cdf_data, draw_CDF_analysis_4
 
 def average_model_solve_time(test_model_result ,test_model_solved, test_model_time):
     all_model_time = 0
@@ -120,6 +120,64 @@ def analysis_3_2(args):
     scatter_fig.savefig("analysis_3_2.eps", dpi = 600)
 
 def analysis_3_5(test_oracle_time, test_top1_time):
-    top1_time_data = create_cdf_data(test_top1_time)
-    oracle_time_data = create_cdf_data(test_oracle_time)
+    top1_time_data = create_cdf_data(test_top1_time, flag = True)
+    oracle_time_data = create_cdf_data(test_oracle_time, flag = True)
     draw_CDF(oracle_time_data, top1_time_data) 
+
+def analysis_4(args):
+    time_col = [7, 22, 43, 54, 60, 79,  110, 122, 125]
+    data = pd.read_csv(args.feature_file_path).values
+    data = data[:,time_col]
+    data = np.sum(data, axis = 1)
+    data = create_cdf_data(data.tolist(),flag = False)
+    draw_CDF_analysis_4(data) 
+
+def analysis_5(args):
+    data = pd.read_csv(args.feature_file_path).values
+    var_data = data[:,1]
+    cls_data = data[:,2]
+    print("变量数最小值:",np.min(var_data))
+    print("变量数最大值:",np.max(var_data))
+    print("变量数平均值:",np.mean(var_data))
+    print("变量数中位数:",np.median(var_data))
+    print("子句数最小值:",np.min(cls_data))
+    print("子句数最大值:",np.max(cls_data))
+    print("子句数平均值:",np.mean(cls_data))
+    print("子句数中位数:",np.median(cls_data))
+    '''
+    # 分析5.2 柱状图
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1,1,1)
+    ax1.set_yscale("log")
+    ax1.set_adjustable("datalim")
+    ax1.axhline(y = np.mean(var_data),c="g", ls="--",lw=1)
+    ax1.axhline(y = np.median(var_data),c="r", ls="dotted",lw=1)
+    x_label = [i for i in range(0,100)]
+    y_label = var_data
+    ax1.bar(x_label, y_label,width=0.5)
+    plt.xticks([i for i in range(0,101,10)])
+    plt.savefig("analysis_5.png")
+    '''
+    # 分析5.3 变量字句比 散点图
+    x = var_data.tolist()
+    y = cls_data.tolist()
+    c = []
+    for i in range(100):
+        tmp = x[i] / y[i]
+        c.append(tmp)
+    fig= plt.figure()
+    plt.scatter(x = x, y = y, c = c)
+    plt.yscale("log")
+    plt.xscale("log")
+    # plt.show()
+    plt.colorbar(label="Like/Dislike Ratio", orientation="horizontal")
+    # plt.savefig("analysis_5_3.eps", format='eps') 
+    plt.savefig("analysis.jpg")
+    '''
+    # fig, ax = plt.subplots()
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+    ax.set_adjustable("datalim")
+    ax.scatter(x, y, c, cmap="summer") 
+    # sax.colorbar(label="Like/Dislike Ratio", orientation="horizontal")
+    '''
