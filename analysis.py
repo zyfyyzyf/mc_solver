@@ -17,7 +17,12 @@ args = parser.parse_args()
 # 加载模型测试结果
 test_model_result , test_model_stage, test_model_solved,  test_model_time = test_read_model_predict_file(args)
 # 3个dict 保存模型对100个测试样例的选择结果,是否求解成功,求解时间
-
+'''
+print(test_model_result)
+print(test_model_stage)
+print(test_model_solved)
+print(test_model_time)
+'''
 # 加载top1结果
 test_top1_solved, test_top1_time = test_read_top1_file(args)
 # 3个dict 保存top1对100个测试样例的选择结果,是否求解成功,求解时间
@@ -25,7 +30,6 @@ test_top1_solved, test_top1_time = test_read_top1_file(args)
 # 加载oracle结果
 test_oracle_result ,test_oracle_solved, test_oracle_time = test_read_oracle_file(args)
 # 3个dict 保存top1对100个测试样例的选择结果,是否求解成功,求解时间
-
 
 # 分析1
 average_model_solve_time(test_model_result ,test_model_solved, test_model_time)
@@ -49,7 +53,7 @@ analysis_3_2(args)
 # 分析3.4 各个求解器的求解比率(pre和主阶段和备份分开)(被选择并能求解)
 '''
 # 分析3.5 求解时间CDF(VBS,oracle,mc_zilla,比赛第一名)
-# analysis_3_5(test_oracle_time, test_top1_time)
+analysis_3_5(test_model_time, test_model_solved, test_oracle_time, test_oracle_solved, test_top1_time, test_top1_solved)
 
 # 分析4 特征计算时间CDF
 # analysis_4(args)

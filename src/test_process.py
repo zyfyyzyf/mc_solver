@@ -6,13 +6,16 @@ import pandas as pd
 import joblib
 import time
 import pickle
+import re 
 def test_presolve(test_result, test_stage, test_solved, test_time, test_label,filename,TestDataset_path, starttime):   
     # 测试两个预求解器
     print("为实例 " ,filename ,' 使用预求解器nus_narasimha...')
-    file_index = int(filename[0])
+    file_index = int(re.findall(r"[-+]?\d*\.\d+|\d+",  filename)[0])
+    print("file_index", file_index)
     pre1_solve_time = test_label[file_index,1]
     endtime = time.time()
     dtime = endtime - starttime
+    print('pre1_solve_time',pre1_solve_time)
     if pre1_solve_time <= 20:
         print("实例 " ,filename ,' 由预求解器nus_narasimha求解...')
         test_result[filename] = 1
@@ -44,7 +47,8 @@ def test_presolve(test_result, test_stage, test_solved, test_time, test_label,fi
 
 def test_backup_solver(test_result, test_stage, test_solved, test_time, test_label, filename, TestDataset_path, starttime):
     file_path = TestDataset_path + file
-    file_index = int(filename[0])
+    file_index = int(re.findall(r"[-+]?\d*\.\d+|\d+",  filename)[0])
+    print('file_index', file_index)
     backup_solve_time = test_label[file_index,4]
     endtime = time.time()
     dtime = endtime - starttime
@@ -57,6 +61,7 @@ def test_backup_solver(test_result, test_stage, test_solved, test_time, test_lab
     print('test_stage[filename]', test_stage[filename])
     print("test_solved[filename]",test_solved[filename])
     print("test_time[filename]", test_time[filename])
+
 def read_test_file(TestDataset_path):
     # 读取测试文件并按顺序排序
     all_file = []
@@ -124,7 +129,8 @@ def infer(feat_time_model, solver_model, test_label, TestDataset_path):
                     cleaned_feature_data = np.delete(feature_data, del_col, axis=1)
                     predict = solver_model.predict(cleaned_feature_data)
                     print("mc_zilla的选择是：",predict[0])
-                    file_index = int(all_file[i][0])
+                    file_index = int(re.findall(r"[-+]?\d*\.\d+|\d+",  all_file[i])[0])
+                    print('file_index', file_index)
                     main_solve_time = test_label[file_index, predict[0]]
                     endtime = time.time()
                     dtime = endtime - starttime

@@ -7,12 +7,12 @@ from matplotlib.pyplot import MultipleLocator
 import pandas as pd 
 # np.set_printoptions(threshold = 1e6)
 import re
-def create_cdf_data(time_data,flag):
+def create_cdf_data(time_data, test_solved,flag):
     if flag == True:
         input_data = []
         for i in range(100):
             f_name = str(i) + '.cnf'
-            if time_data[f_name] != 1800:
+            if test_solved[f_name] == True:
                 input_data.append(time_data[f_name])
     else:
         input_data = time_data
@@ -25,16 +25,22 @@ def create_cdf_data(time_data,flag):
     Fre_df[0]=Fre_df[0]/denominator
     Fre_df.columns=['Rds','Fre']
     Fre_df['cumsum']=np.cumsum(Fre_df['Fre'])
+    pd.set_option('display.max_columns', None)
+    #显示所有行
+    pd.set_option('display.max_rows', None)
+    print(Fre_df)
     return Fre_df
 
-def draw_CDF(oracle_time_data, top1_time_data,f_name):
+def draw_CDF(model_time_data, oracle_time_data, top1_time_data):
     #创建画布
     plot=plt.figure()
     #只有一张图，也可以多张
     ax1=plot.add_subplot(1,1,1)
     #按照Rds列为横坐标，累计概率分布为纵坐标作图
-    ax1.plot(oracle_time_data['Rds'],oracle_time_data['cumsum'])
-    ax1.plot(top1_time_data['Rds'],top1_time_data['cumsum'])
+    ax1.plot(model_time_data['Rds'],model_time_data['cumsum'], label='mc_zilla')
+    ax1.plot(oracle_time_data['Rds'],oracle_time_data['cumsum'], label='oracle')
+    ax1.plot(top1_time_data['Rds'],top1_time_data['cumsum'], label='sharpsat_td')
+    
     font = FontProperties(fname='/System/Library/Fonts/STHeiti Light.ttc', size=16)
     #图的标题
     ax1.set_title("solve_time_CDF")
@@ -43,7 +49,7 @@ def draw_CDF(oracle_time_data, top1_time_data,f_name):
     #纵轴名
     ax1.set_ylabel("solved %")
     #横轴的界限
-    ax1.set_xlim(-100,1800)
+    ax1.set_xlim(-100,1900)
     ax1.set_ylim(0,1)
     x_major_locator=MultipleLocator(200)
     y_major_locator=MultipleLocator(0.1)
@@ -51,6 +57,7 @@ def draw_CDF(oracle_time_data, top1_time_data,f_name):
     ax1.yaxis.set_major_locator(y_major_locator)
     #图片显示
     plt.grid()
+    plt.legend()
     plt.show()
     # plt.savefig("analysis_3_5.eps", format='eps') 
     plt.savefig("analysis_3_5.png")

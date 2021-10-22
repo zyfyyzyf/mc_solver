@@ -8,14 +8,12 @@ from src.util import draw_pie, draw_CDF, create_cdf_data, draw_CDF_analysis_4
 def average_model_solve_time(test_model_result ,test_model_solved, test_model_time):
     all_model_time = 0
     solved_count = 0
-    print(test_model_time)
     for i in range(100):
         # 如果可以求解
         f_name = str(i) + '.cnf'
         if test_model_solved[f_name] == True:
            all_model_time += float(test_model_time[f_name])
            solved_count += 1
-        print(all_model_time)
     average_model_time = all_model_time / solved_count
     print("mc_zilla求解实例数:",solved_count)
     print("mc_zilla超时实例数:",100 - solved_count)
@@ -56,9 +54,6 @@ def average_oracle_solve_time(test_oracle_solved, test_oracle_time):
     print("oracle总求解时间(h):",all_oracle_time)   
 
 def analysis_2(test_model_result, test_model_stage, test_model_solved, test_model_time, args):
-    print("test_model_result", test_model_result)
-    print("test_model_solved", test_model_solved)
-    print("test_model_solved", test_model_solved)
     component_solver_choice = {}
     component_solver_solved = {}
     component_solver_average_runtime = {}
@@ -126,10 +121,11 @@ def analysis_3_2(args):
     scatter_fig = fig.get_figure()
     scatter_fig.savefig("analysis_3_2.eps", dpi = 600)
 
-def analysis_3_5(test_oracle_time, test_top1_time):
-    top1_time_data = create_cdf_data(test_top1_time, flag = True)
-    oracle_time_data = create_cdf_data(test_oracle_time, flag = True)
-    draw_CDF(oracle_time_data, top1_time_data) 
+def analysis_3_5(test_model_time, test_model_solved, test_oracle_time, test_oracle_solved, test_top1_time, test_top1_solved):
+    model_time_data = create_cdf_data(test_model_time, test_model_solved, flag = True)
+    top1_time_data = create_cdf_data(test_top1_time, test_top1_solved, flag = True)
+    oracle_time_data = create_cdf_data(test_oracle_time, test_oracle_solved, flag = True)
+    draw_CDF(model_time_data, oracle_time_data, top1_time_data) 
 
 def analysis_4(args):
     time_col = [7, 22, 43, 54, 60, 79,  110, 122, 125]
