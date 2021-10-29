@@ -28,7 +28,6 @@ def create_cdf_data(time_data, test_solved,flag):
     pd.set_option('display.max_columns', None)
     #显示所有行
     pd.set_option('display.max_rows', None)
-    print(Fre_df)
     return Fre_df
 
 def draw_CDF(model_time_data, oracle_time_data, top1_time_data):
@@ -88,6 +87,7 @@ def draw_CDF_analysis_4(data):
     plt.show()
     # plt.savefig("analysis_4.eps", format='eps') 
     plt.savefig("analysis_4.png")
+
 def sort_key(s):
     #sort_strings_with_embedded_numbers
     re_digits = re.compile(r'(\d+)')
@@ -105,7 +105,6 @@ def time2score(time_data, cutoff):
                 outscore[i][j] = time_data[i][j] * 10
             outscore[i][j] = cutoff * 10 - outscore[i][j]
     return outscore
-
 
 def del_constant_col(feature_data):
     fun_feature_data = feature_data.copy()

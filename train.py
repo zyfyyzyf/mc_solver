@@ -11,19 +11,19 @@ from src.read_file import read_file
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--TrainDataset",
-                    help="训练集位置", type=str, default="/home/mc_zilla/data/cleaned_data/train_data_cleaned.npz")
+                    help="训练集位置", type=str, default="data/cleaned_data/train_data_cleaned.npz")
 parser.add_argument("--OutputDir",
                     help="输出目录", type=str, default="/home/mc_zilla/save_model")
 parser.add_argument("--ModelType",
                     help="模型类型", type=str, default="RF")
 parser.add_argument("--LabelType",
-                    help="标签类型(两两成对还是整个一体)", type=str, default="single")
+                    help="标签类型(两两成对还是整个一体)", type=str, default="pair")
 parser.add_argument("--FeatureCutoff",
                     help="特征计算时间阈值", type=int, default=180)
 parser.add_argument("--AllCutoff",
                     help="全过程时间阈值", type=int, default=1800)
 parser.add_argument("--NumberSolver",
-                    help="求解器数", type=int, default=6)
+                    help="求解器数", type=int, default=9)
 parser.add_argument("--NumberFeature",
                     help="特征数", type=int, default=115)
 parser.add_argument("--Seed",
@@ -47,12 +47,8 @@ parser.add_argument("--ScoreType",
 parser.add_argument("--CostType",
                     help="随机森林权重类型", type=str, default="RAW")
 args = parser.parse_args()
-'''
-# np.random.seed(args.Seed)
-# print(np.random.rand())
-# np.random.seed(args.Seed)
-# print(np.random.rand())
-'''
+
+
 data = np.load(args.TrainDataset)
 # 加载数据
 Train_data = data['Train_data']
@@ -64,13 +60,13 @@ Train_feature_time = data['Train_feature_time']
 train_instance = Train_data.shape[0]
 
 # 训练随机森林判断实例是否能计算特征时间
-feat_time_model = judge_feature_time(Train_simple_feature, Train_feature_time, args)
+# feat_time_model = judge_feature_time(Train_simple_feature, Train_feature_time, args)
 # 返回随机森林模型
 
 solver_model = judge_solver(Train_solver_runtime, Train_feature_time, Train_feature, args)
 # 返回随机森林模型集合 字典形式 对应的求解器组合名作为key 标签为模型
 # eg  '0,1': RandomForestClassifier()
 
-joblib.dump(feat_time_model, r'/home/mc_zilla/save_model/feat_time_model.pkl')
+# joblib.dump(feat_time_model, r'/home/mc_zilla/save_model/feat_time_model.pkl')
 joblib.dump(solver_model, r'/home/mc_zilla/save_model/solver_model.pkl')
 

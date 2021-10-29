@@ -36,7 +36,6 @@ def judge_feature_time(Train_simple_feature, Train_feature_time, args):
     # X = np.expand_dims(Train_feature_time, axis=1).copy()
     X = Train_simple_feature
     # X shape (训练实例数, 2)  每个实例的简单特征
-    print(y)
 
     # 进行交叉验证
     kf = KFold(n_splits=args.NumCrossValidation)
@@ -75,13 +74,12 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
     # 先选择使用两个预求解器超时并且可以进行特征计算的实例
     choice = choice_ids(Train_feature_time, Train_solver_runtime, args)
     # list len 需要进行主求解器选择的实例  只有这些实例才需要进入求解器选择阶段
-
     # 制作输入数据
     X = Train_feature.copy()
     # 删除常数列(18个sp列)
     X = del_constant_col(X)
     # 对数据进行归一化
-    # X = data_normalization(X)
+    X = data_normalization(X)
     # shape (训练实例数,清洗后的特征列数)  删去无用的列，在列的维度上归一化
     X = X[choice, :]
     # shape (需要训练实例数,清洗后的特征列数)
@@ -130,6 +128,7 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
             weight[i] /= (args.NumberSolver - 1)
         y = y[choice,]
         weight = weight[choice,]
+        print(y)
         return weight, X, y
 
 
@@ -216,7 +215,7 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
         weight, X, y = get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_feature, args)
         if args.ModelType == 'RF':
             # 随机森林
-            model = RandomForestClassifier(n_estimators=100)
+            model = RandomForestClassifier(n_estimators=200)
             # 在260颗树下 没归一化0.717 # 归一化后0.69
             # 在100颗树下 没归一化0.705 # 归一化后0.709
             # 十折交叉验证
@@ -494,6 +493,8 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
             print("模型 " + args.ModelType + " 在 " + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(scores))
 
     return model 
+
+
 def judge_solver(Train_solver_runtime, Train_feature_time, Train_feature, args):
     # 进行模型选择
     model = model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args)
