@@ -14,39 +14,7 @@ from src.util import time2score, del_constant_col, data_normalization
 import sklearn
 import random
 
-
-# np.set_printoptions(threshold=1e6)
-
-
-# 训练随机森林判断实例是否能计算特征时间
-def judge_feature_time(Train_simple_feature, Train_feature_time, args):
-    train_instance = Train_feature_time.shape[0]
-    # 生成随机森林模型
-    model_feat_time = RandomForestClassifier(n_estimators=100)
-
-    # 制作标签和训练数据
-    y = np.zeros(shape=(train_instance,))
-    y -= 1
-    for i in range(train_instance):
-        if Train_feature_time[i] >= args.FeatureCutoff:
-            y[i] = 1
-    # y shape (训练实例数, ) 值为-1表明特征计算不超时 1表明特征计算超时
-
-    # 制作输入数据
-    # X = np.expand_dims(Train_feature_time, axis=1).copy()
-    X = Train_simple_feature
-    # X shape (训练实例数, 2)  每个实例的简单特征
-
-    # 进行交叉验证
-    kf = KFold(n_splits=args.NumCrossValidation)
-    for train_index, val_index in kf.split(X):
-        train_X, train_y = X[train_index], y[train_index]
-        val_X, val_y = X[val_index], y[val_index]
-        model_feat_time.fit(train_X, train_y)
-        print("特征计算时间，交叉验证分数: ", model_feat_time.score(val_X, val_y))
-    # 返回模型
-    return model_feat_time
-
+np.set_printoptions(threshold=1e6)
 
 def choice_ids(Train_feature_time, Train_solver_runtime, args):
     train_instance = Train_feature_time.shape[0]
@@ -120,7 +88,7 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
             y[i] = foo[i]
             for j in range(args.NumberSolver):
                 weight[i] += (score[i, foo[i]] - score[i, j])
-            weight[i] /= (args.NumberSolver - 1)
+            weight[i] /= (args.NumberSolver - 1) / 1000
         y = y[choice,]
         weight = weight[choice,]
         return weight, X, y
@@ -225,9 +193,10 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 score.append(model.score(val_X, val_y))
                 time += 1
             print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
+        
             model = RandomForestClassifier(n_estimators=100) 
             model.fit(X,y)
-            print(model.predict(X))
+
         if args.ModelType == 'AdaBoost':
             # SVM模型
             model = AdaBoostClassifier()  # 0.39
@@ -495,3 +464,34 @@ def judge_solver(Train_solver_runtime, Train_feature_time, Train_feature, args):
     model = model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args)
     return model 
    
+# 训练随机森林判断实例是否能计算特征时间
+def judge_feature_time(Train_simple_feature, Train_feature_time, args):
+    train_instance = Train_feature_time.shape[0]
+    # 生成随机森林模型
+    model_feat_time = RandomForestClassifier(n_estimators=200)
+
+    # 制作标签和训练数据
+    y = np.zeros(shape=(train_instance,))
+    y -= 1
+    print(Train_feature_time)
+    for i in range(train_instance):
+        if Train_feature_time[i] >= args.FeatureCutoff:
+            y[i] = 1
+    # y shape (训练实例数, ) 值为-1表明特征计算不超时 1表明特征计算超时
+
+    # 制作输入数据
+    # X = np.expand_dims(Train_feature_time, axis=1).copy()
+    X = Train_simple_feature
+    # X shape (训练实例数, 2)  每个实例的简单特征
+
+    # 进行交叉验证
+    kf = KFold(n_splits=args.NumCrossValidation)
+    for train_index, val_index in kf.split(X):
+        train_X, train_y = X[train_index], y[train_index]
+        val_X, val_y = X[val_index], y[val_index]
+        model_feat_time.fit(train_X, train_y)
+        print("特征计算时间，交叉验证分数: ", model_feat_time.score(val_X, val_y))
+    # 返回模型
+    model_feat_time = RandomForestClassifier(n_estimators=200)
+    model_feat_time.fit(X,y)
+    return model_feat_time
