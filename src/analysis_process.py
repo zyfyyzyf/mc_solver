@@ -17,7 +17,7 @@ def average_model_solve_time(test_model_result ,test_model_solved, test_model_ti
     average_model_time = all_model_time / solved_count
     print("mc_zilla求解实例数:",solved_count)
     print("mc_zilla超时实例数:",100 - solved_count)
-    print("mc_zilla平均求解时间(s):",average_model_time)
+    print("mc_zilla平均求解时间(s):", average_model_time)
     all_model_time = all_model_time / 60 / 60
     print("mc_zilla总求解时间(h):",all_model_time)
 

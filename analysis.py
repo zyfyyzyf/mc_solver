@@ -5,7 +5,7 @@ from src.analysis_process import analysis_2, analysis_3_1, analysis_3_2,analysis
 from src.read_file import test_read_model_predict_file, test_read_oracle_file, test_read_top1_file
 parser = argparse.ArgumentParser()
 parser.add_argument("--NumberSolver",
-                    help="求解器数", type=int, default=6)
+                    help="求解器数", type=int, default=9)
 parser.add_argument("--predict_file_path",
                     help="预测结果地址", type=str, default="save_model/test_result.pkl.npz")
 parser.add_argument("--label_file_path",
@@ -53,7 +53,7 @@ analysis_3_2(args)
 # 分析3.4 各个求解器的求解比率(pre和主阶段和备份分开)(被选择并能求解)
 '''
 # 分析3.5 求解时间CDF(VBS,oracle,mc_zilla,比赛第一名)
-analysis_3_5(test_model_time, test_model_solved, test_oracle_time, test_oracle_solved, test_top1_time, test_top1_solved)
+# analysis_3_5(test_model_time, test_model_solved, test_oracle_time, test_oracle_solved, test_top1_time, test_top1_solved)
 
 # 分析4 特征计算时间CDF
 # analysis_4(args)

@@ -76,11 +76,6 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
     # list len 需要进行主求解器选择的实例  只有这些实例才需要进入求解器选择阶段
     # 制作输入数据
     X = Train_feature.copy()
-    # 删除常数列(18个sp列)
-    X = del_constant_col(X)
-    # 对数据进行归一化
-    X = data_normalization(X)
-    # shape (训练实例数,清洗后的特征列数)  删去无用的列，在列的维度上归一化
     X = X[choice, :]
     # shape (需要训练实例数,清洗后的特征列数)
 
@@ -128,7 +123,6 @@ def get_weight_input_label(Train_solver_runtime, Train_feature_time, Train_featu
             weight[i] /= (args.NumberSolver - 1)
         y = y[choice,]
         weight = weight[choice,]
-        print(y)
         return weight, X, y
 
 
@@ -227,12 +221,13 @@ def model_choice(Train_solver_runtime, Train_feature_time, Train_feature, args):
                 train_X, train_y = X[train_index], y[train_index]
                 val_X, val_y = X[val_index], y[val_index]
                 train_weight = weight[train_index,]
-                model.fit(train_X, train_y, sample_weight=train_weight)
+                model.fit(train_X, train_y)
                 score.append(model.score(val_X, val_y))
                 time += 1
-                # 在最后一折的数据很难验证
-            print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score)) 
-
+            print("模型 " + args.ModelType + " 在" + args.LabelType + " 标签下的10折平均交叉验证分数是: ", np.mean(score))
+            model = RandomForestClassifier(n_estimators=100) 
+            model.fit(X,y)
+            print(model.predict(X))
         if args.ModelType == 'AdaBoost':
             # SVM模型
             model = AdaBoostClassifier()  # 0.39

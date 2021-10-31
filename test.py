@@ -14,21 +14,21 @@ from  src.test_process import infer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--TestDataset",
-                    help="测试集位置", type=str, default="/home/zhangyf/mc_zilla/data/raw_data/test_data/")
+                    help="测试集位置", type=str, default="data/raw_data/test_data/")
 parser.add_argument("--TestLabel",
-                    help="测试集标签文件", type=str, default="/home/zhangyf/mc_zilla/data/test_label.csv")
+                    help="测试集标签文件", type=str, default="data/test_label.csv")
 parser.add_argument("--ModelDir",
                     help="模型目录", type=str, default="save_model")
 parser.add_argument("--NumberSolver",
-                    help="求解器数", type=int, default=6)
+                    help="求解器数", type=int, default=10)
 args = parser.parse_args()
 
 
 # 加载模型
 model_feat_time_path = args.ModelDir + '/' + "model_feat_time.npy"
 model_solver_path = args.ModelDir + '/' + "model_solver.npz"
-feat_time_model = joblib.load("/home/zhangyf/mc_zilla/save_model/feat_time_model.pkl")
-solver_model = joblib.load("/home/zhangyf/mc_zilla/save_model/solver_model.pkl")
+feat_time_model = joblib.load("save_model/feat_time_model.pkl")
+solver_model = joblib.load("save_model/solver_model.pkl")
 
 # 加载标签(用于查表)
 test_label = pd.read_csv(args.TestLabel).values
@@ -41,7 +41,8 @@ for i in range(args.NumberSolver):
     del1 += 3
     del2 += 3 
 test_label = np.delete(test_label, del_col, axis = 1)
-# shape (6,100)
+# shape (10,100)
+print(test_label)
 infer(feat_time_model, solver_model, test_label, args.TestDataset)
 
 

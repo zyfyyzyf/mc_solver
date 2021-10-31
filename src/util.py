@@ -110,14 +110,11 @@ def del_constant_col(feature_data):
     fun_feature_data = feature_data.copy()
     number_instance = feature_data.shape[0]
     number_feature = feature_data.shape[1]
-    all_feature_col = []
     constant_col = []
     for i in range(number_feature):
         c = Counter(feature_data[:, i])
         if c[-512] == number_instance or c[0] == number_instance:
             constant_col.append(i)
-    for i in range(number_feature):
-        all_feature_col.append(i)
     cleaned_feature_data = np.delete(fun_feature_data, constant_col, axis=1)
     return cleaned_feature_data
 

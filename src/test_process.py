@@ -9,16 +9,15 @@ import pickle
 import re 
 def test_presolve(test_result, test_stage, test_solved, test_time, test_label,filename,TestDataset_path, starttime):   
     # 测试两个预求解器
-    print("为实例 " ,filename ,' 使用预求解器nus_narasimha...')
+    print("为实例 " ,filename ,' 使用预求解器sharpsat_td...')
     file_index = int(re.findall(r"[-+]?\d*\.\d+|\d+",  filename)[0])
     print("file_index", file_index)
-    pre1_solve_time = test_label[file_index,1]
+    pre1_solve_time = test_label[file_index,4]
     endtime = time.time()
     dtime = endtime - starttime
-    print('pre1_solve_time',pre1_solve_time)
     if pre1_solve_time <= 20:
-        print("实例 " ,filename ,' 由预求解器nus_narasimha求解...')
-        test_result[filename] = 1
+        print("实例 " , filename ,' 由预求解器sharpsat_td求解...')
+        test_result[filename] = 4
         test_stage[filename] = 'pre1'
         test_solved[filename] = True
         test_time[filename] = round(pre1_solve_time + dtime, 2)
@@ -28,14 +27,14 @@ def test_presolve(test_result, test_stage, test_solved, test_time, test_label,fi
         print("test_time[filename]", test_time[filename])
         return True
     else:
-        print("预求解器count_bareganak失败...")
-        print("为实例", filename, '使用预求解器sharpsat_td...')
-        pre2_solve_time = test_label[file_index,4]
+        print("预求解器sharpsat_td失败...")
+        print("为实例", filename, '使用预求解器count_bareganak中...')
+        pre2_solve_time = test_label[file_index,1]
         endtime = time.time()
         dtime = endtime - starttime
         if pre2_solve_time <= 20:
-            print("实例 " ,filename ,' 由预求解器sharpsat_td求解...')
-            test_result[filename] = 4
+            print("实例 " ,filename ,' 由预求解器count_bareganak求解...')
+            test_result[filename] = 1
             test_stage[filename] = 'pre2'
             test_solved[filename] = True
             test_time[filename] = round(pre2_solve_time + dtime, 2)
@@ -121,8 +120,8 @@ def infer(feat_time_model, solver_model, test_label, TestDataset_path):
                     # 读取csv文件
                     print("实例 ", all_file[i]," 特征计算成功，进行求解器选择...")
                     feature_data = pd.read_csv("/home/zhangyf/mc_zilla/test_feature.csv").values
-                    # remove 0 7(pre) 22(basic) 43(klb) 54(cg) 60(dia) cl(79) sp(98) ls-sap(110) ls-gast(121) lob(124)  80-98
-                    del_col = [0, 7, 22, 43, 54, 60, 79,  110, 122, 125] 
+                    # remove 0 7(pre) 22(basic) 43(klb) 54(cg) 60(dia) cl(79) sp(98) ls-sap(110) ls-gast(122) lob(125)  80-98 
+                    del_col = [0, 7, 22, 43, 54, 60, 79,  110, 122, 125]  
                     for index in range(80, 99):
                         del_col.append(index)
                     del_col.sort()
